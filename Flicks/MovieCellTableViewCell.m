@@ -13,6 +13,8 @@
 - (void)awakeFromNib {
     [super awakeFromNib];
     // Initialization code
+    self.layoutMargins = UIEdgeInsetsZero;
+    self.preservesSuperviewLayoutMargins = false;
 }
 
 - (void)setSelected:(BOOL)selected animated:(BOOL)animated {

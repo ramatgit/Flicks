@@ -7,9 +7,16 @@
 //
 
 #import "MovieDetailViewController.h"
+#import "UIImageView+AFNetworking.h"
 
 @interface MovieDetailViewController ()
-@property (weak, nonatomic) IBOutlet UIImageView *movieDetailImage;
+
+@property (weak, nonatomic) IBOutlet UIImageView *infoView;
+@property (weak, nonatomic) IBOutlet UILabel *titleLabel;
+@property (weak, nonatomic) IBOutlet UILabel *detailsLabel;
+@property (weak, nonatomic) IBOutlet UIScrollView *movieDetailsScrollView;
+@property (weak, nonatomic) IBOutlet UILabel *overviewLabel;
+
 
 @end
 
@@ -17,18 +24,31 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    // Do any additional setup after loading the view.
     
     NSLog(self.movie[@"title"]);
     
-    NSString *imageURLString = [NSString stringWithFormat: @"https://image.tmdb.org/t/p/w342%@", self.movie[@"poster_path"]];
+    NSString *imageURLString = [NSString stringWithFormat: @"https://image.tmdb.org/t/p/original%@", self.movie[@"poster_path"]];
     
     NSLog(@"imagedetailurl: %@", imageURLString);
     
+    [self.infoView setImageWithURL:[NSURL URLWithString:(imageURLString)]];
+    
+    self.overviewLabel.text = self.movie[@"overview"];
+    self.overviewLabel.lineBreakMode = UILineBreakModeWordWrap;
+    self.overviewLabel.numberOfLines = 0;
+    [self.overviewLabel sizeToFit];
+    
+    self.titleLabel.text = self.movie[@"original_title"];
+    self.detailsLabel.text = self.movie[@"release_date"];
     
     
+    CGRect frame = self.infoView.frame;
+    frame.size.height = self.titleLabel.frame.size.height + self.detailsLabel.frame.size.height +self.overviewLabel.frame.size.height + self.overviewLabel.frame.origin.y + 10;
+    self.infoView.frame = frame;
     
+    self.movieDetailsScrollView.contentSize = CGSizeMake(self.movieDetailsScrollView.frame.size.width, 60 + self.infoView.frame.origin.y + self.infoView.frame.size.height);
     
+
 }
 
 - (void)didReceiveMemoryWarning {

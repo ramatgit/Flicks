@@ -13,22 +13,42 @@
 
 @interface ViewController () <UITableViewDelegate, UITableViewDataSource>
 
-@property (nonatomic, strong) NSArray* movies;
+@property (nonatomic, strong) NSArray *movies;
 @property (weak, nonatomic) IBOutlet UITableView *tableView;
+
 
 @end
 
 @implementation ViewController
 
+
 - (void)viewDidLoad {
     [super viewDidLoad];
     // Do any additional setup after loading the view, typically from a nib.
+    
     self.tableView.dataSource = self;
     self.tableView.delegate = self;
     
+    //self.tableView.rowHeight = UITableViewAutomaticDimension;
+    //self.tableView.estimatedRowHeight = 100;
+    
+    self.tableView.separatorInset = UIEdgeInsetsZero;
+    
+    UIRefreshControl *refreshControl = [[UIRefreshControl alloc] init];
+    [refreshControl addTarget:self
+                action:@selector(refreshControlAction:)
+      forControlEvents:UIControlEventValueChanged];
+
+    [self.tableView insertSubview:(refreshControl) atIndex:(0)];
+    
+    NSLog(@"endpoint: %@", self.endPoint);
+    
     NSString *apiKey = @"a07e22bc18f5cb106bfe4cc1f83ad8ed";
+    NSString *baseString = @"https://api.themoviedb.org/3/movie/";
     NSString *urlString =
-    [@"https://api.themoviedb.org/3/movie/now_playing?api_key=" stringByAppendingString:apiKey];
+    [baseString stringByAppendingFormat:@"%@?api_key=%@", self.endPoint, apiKey];
+    
+    NSLog(@"URL String: %@", urlString);
     
     NSURL *url = [NSURL URLWithString:urlString];
     NSURLRequest *request = [[NSURLRequest alloc] initWithURL:url];
@@ -58,6 +78,7 @@
     [task resume];
 }
 
+
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
     // Dispose of any resources that can be recreated.
@@ -78,6 +99,11 @@
     
     cell.titleLabel.text = movie[@"title"];
     cell.synopsisLabel.text = movie[@"overview"];
+    
+    cell.synopsisLabel.lineBreakMode = UILineBreakModeWordWrap;
+    cell.synopsisLabel.numberOfLines = 0;
+    [cell.synopsisLabel sizeToFit];
+
 
     
     NSString *imageURLString = [NSString stringWithFormat: @"https://image.tmdb.org/t/p/w92%@", movie[@"poster_path"]];
@@ -101,5 +127,43 @@
     
 }
 
+-(void)refreshControlAction:(UIRefreshControl *)refreshControl {
+    NSString *apiKey = @"a07e22bc18f5cb106bfe4cc1f83ad8ed";
+    NSString *baseString = @"https://api.themoviedb.org/3/movie/";
+    NSString *urlString =
+    [baseString stringByAppendingFormat:@"%@?api_key=%@", self.endPoint, apiKey];
+    
+    NSLog(@"URL String: %@", urlString);
+    
+    NSURL *url = [NSURL URLWithString:urlString];
+    NSURLRequest *request = [[NSURLRequest alloc] initWithURL:url];
+    
+    NSURLSession *session =
+    [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration]
+                                  delegate:nil
+                             delegateQueue:[NSOperationQueue mainQueue]];
+    
+    NSURLSessionDataTask *task = [session dataTaskWithRequest:request
+                                            completionHandler:^(NSData * _Nullable data,
+                                                                NSURLResponse * _Nullable response,
+                                                                NSError * _Nullable error) {
+                                                if (!error) {
+                                                    NSError *jsonError = nil;
+                                                    NSDictionary *responseDictionary =
+                                                    [NSJSONSerialization JSONObjectWithData:data
+                                                                                    options:kNilOptions
+                                                                                      error:&jsonError];
+                                                    NSLog(@"Response: %@", responseDictionary);
+                                                    self.movies = responseDictionary[@"results"];
+                                                    [self.tableView reloadData];
+                                                } else {
+                                                    NSLog(@"An error occurred: %@", error.description);
+                                                }
+                                            }];
+    [refreshControl endRefreshing];
+    
+    [task resume];
+
+}
 
 @end

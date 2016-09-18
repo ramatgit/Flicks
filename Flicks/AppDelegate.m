@@ -7,6 +7,8 @@
 //
 
 #import "AppDelegate.h"
+#import "ViewController.h"
+
 
 @interface AppDelegate ()
 
@@ -17,6 +19,41 @@
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     // Override point for customization after application launch.
+    
+    UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"Main" bundle:nil];
+    
+    UINavigationController *topRatedNavigationController = [storyboard instantiateViewControllerWithIdentifier:@"MoviesNavigationController"];
+    ViewController *topRatedViewController = (ViewController *)[topRatedNavigationController topViewController];
+    topRatedViewController.endPoint = @"top_rated";
+    topRatedViewController.tabBarItem.title = @"Top Rated";
+    topRatedViewController.tabBarItem.image = [UIImage imageNamed:@"heart"];
+
+    
+    UINavigationController *nowPlayingNavigationController = [storyboard instantiateViewControllerWithIdentifier:@"MoviesNavigationController"];
+    ViewController *nowPlayingController = (ViewController *)[nowPlayingNavigationController topViewController];
+    nowPlayingController.endPoint = @"now_playing";
+    nowPlayingController.tabBarItem.title = @"Now Playing";
+    nowPlayingController.tabBarItem.image = [UIImage imageNamed:@"star"];
+
+    
+    UITabBarController *tabBarController = [[UITabBarController alloc] init];
+    tabBarController.viewControllers = @[topRatedNavigationController, nowPlayingNavigationController];
+    
+    
+    self.window.rootViewController = tabBarController;
+    [self.window makeKeyAndVisible];
+    
+    UITabBarController *tabBarControllerForTitle = (UITabBarController *)self.window.rootViewController;
+    
+    [[tabBarControllerForTitle.viewControllers objectAtIndex:0] setTitle:@"Top Rated"];
+    [[tabBarControllerForTitle.viewControllers objectAtIndex:1] setTitle:@"Now Playing"];
+
+    
+    [[[tabBarControllerForTitle.viewControllers objectAtIndex:0] tabBarItem] setImage:[[UIImage imageNamed:@"heart"] imageWithRenderingMode:UIImageRenderingModeAutomatic]];
+    [[[tabBarControllerForTitle.viewControllers objectAtIndex:1] tabBarItem] setImage:[[UIImage imageNamed:@"star"] imageWithRenderingMode:UIImageRenderingModeAutomatic]];
+
+
+    
     return YES;
 }
 
