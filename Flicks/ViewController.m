@@ -10,11 +10,14 @@
 #import "MovieCellTableViewCell.h"
 #import "MovieDetailViewController.h"
 #import "UIImageView+AFNetworking.h"
+#import "MBProgressHUD.h"
+
 
 @interface ViewController () <UITableViewDelegate, UITableViewDataSource>
 
 @property (nonatomic, strong) NSArray *movies;
 @property (weak, nonatomic) IBOutlet UITableView *tableView;
+//@property (weak, nonatomic) IBOutlet UIView *networkErrorView;
 
 
 @end
@@ -42,40 +45,7 @@
     [self.tableView insertSubview:(refreshControl) atIndex:(0)];
     
     NSLog(@"endpoint: %@", self.endPoint);
-    
-    NSString *apiKey = @"a07e22bc18f5cb106bfe4cc1f83ad8ed";
-    NSString *baseString = @"https://api.themoviedb.org/3/movie/";
-    NSString *urlString =
-    [baseString stringByAppendingFormat:@"%@?api_key=%@", self.endPoint, apiKey];
-    
-    NSLog(@"URL String: %@", urlString);
-    
-    NSURL *url = [NSURL URLWithString:urlString];
-    NSURLRequest *request = [[NSURLRequest alloc] initWithURL:url];
-    
-    NSURLSession *session =
-    [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration]
-                                  delegate:nil
-                             delegateQueue:[NSOperationQueue mainQueue]];
-    
-    NSURLSessionDataTask *task = [session dataTaskWithRequest:request
-                                            completionHandler:^(NSData * _Nullable data,
-                                                                NSURLResponse * _Nullable response,
-                                                                NSError * _Nullable error) {
-                                                if (!error) {
-                                                    NSError *jsonError = nil;
-                                                    NSDictionary *responseDictionary =
-                                                    [NSJSONSerialization JSONObjectWithData:data
-                                                                                    options:kNilOptions
-                                                                                      error:&jsonError];
-                                                    NSLog(@"Response: %@", responseDictionary);
-                                                    self.movies = responseDictionary[@"results"];
-                                                    [self.tableView reloadData];
-                                                } else {
-                                                    NSLog(@"An error occurred: %@", error.description);
-                                                }
-                                            }];
-    [task resume];
+    [self loadMovieDataFromNetwork];
 }
 
 
@@ -128,6 +98,12 @@
 }
 
 -(void)refreshControlAction:(UIRefreshControl *)refreshControl {
+
+    [self loadMovieDataFromNetwork];
+        [refreshControl endRefreshing];
+}
+
+-(void)loadMovieDataFromNetwork {
     NSString *apiKey = @"a07e22bc18f5cb106bfe4cc1f83ad8ed";
     NSString *baseString = @"https://api.themoviedb.org/3/movie/";
     NSString *urlString =
@@ -143,10 +119,12 @@
                                   delegate:nil
                              delegateQueue:[NSOperationQueue mainQueue]];
     
+    [MBProgressHUD showHUDAddedTo:self.view animated:YES];
     NSURLSessionDataTask *task = [session dataTaskWithRequest:request
                                             completionHandler:^(NSData * _Nullable data,
                                                                 NSURLResponse * _Nullable response,
                                                                 NSError * _Nullable error) {
+                                                [MBProgressHUD hideHUDForView:self.view animated:YES];
                                                 if (!error) {
                                                     NSError *jsonError = nil;
                                                     NSDictionary *responseDictionary =
@@ -158,12 +136,27 @@
                                                     [self.tableView reloadData];
                                                 } else {
                                                     NSLog(@"An error occurred: %@", error.description);
+
                                                 }
                                             }];
-    [refreshControl endRefreshing];
-    
     [task resume];
 
+
+}
+
+- (void)webView:(UIWebView *)webView didFailLoadWithError:(NSError *)error {
+    
+    NSString *titleString = @"Error Loading Page";
+    NSString *messageString = [error localizedDescription];
+    NSString *moreString = [error localizedFailureReason] ?
+    [error localizedFailureReason] :
+    NSLocalizedString(@"Try typing the URL again.", nil);
+    messageString = [NSString stringWithFormat:@"%@. %@", messageString, moreString];
+    
+    UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:titleString
+                                                        message:messageString delegate:self
+                                              cancelButtonTitle:@"Cancel" otherButtonTitles:nil];
+    [alertView show];
 }
 
 @end

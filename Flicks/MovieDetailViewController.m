@@ -11,11 +11,12 @@
 
 @interface MovieDetailViewController ()
 
-@property (weak, nonatomic) IBOutlet UIImageView *infoView;
+@property (weak, nonatomic) IBOutlet UIImageView *imageDetailView;
 @property (weak, nonatomic) IBOutlet UILabel *titleLabel;
 @property (weak, nonatomic) IBOutlet UILabel *detailsLabel;
 @property (weak, nonatomic) IBOutlet UIScrollView *movieDetailsScrollView;
 @property (weak, nonatomic) IBOutlet UILabel *overviewLabel;
+@property (weak, nonatomic) IBOutlet UIView *infoView;
 
 
 @end
@@ -31,7 +32,7 @@
     
     NSLog(@"imagedetailurl: %@", imageURLString);
     
-    [self.infoView setImageWithURL:[NSURL URLWithString:(imageURLString)]];
+    [self.imageDetailView setImageWithURL:[NSURL URLWithString:(imageURLString)]];
     
     self.overviewLabel.text = self.movie[@"overview"];
     self.overviewLabel.lineBreakMode = UILineBreakModeWordWrap;
@@ -46,7 +47,7 @@
     frame.size.height = self.titleLabel.frame.size.height + self.detailsLabel.frame.size.height +self.overviewLabel.frame.size.height + self.overviewLabel.frame.origin.y + 10;
     self.infoView.frame = frame;
     
-    self.movieDetailsScrollView.contentSize = CGSizeMake(self.movieDetailsScrollView.frame.size.width, 60 + self.infoView.frame.origin.y + self.infoView.frame.size.height);
+    self.movieDetailsScrollView.contentSize = CGSizeMake(self.movieDetailsScrollView.frame.size.width, 130 + self.infoView.frame.origin.y + self.infoView.frame.size.height);
     
 
 }
